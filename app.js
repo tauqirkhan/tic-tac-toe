@@ -3,9 +3,9 @@ function Gameboard(){
     const board = [];
     const grid = 3;
 
-    for (let row = 0; row < grid.length; row++){
+    for (let row = 0; row < grid; row++){
         board[row] = [];
-        for (let column = 0; column < grid.length; column++){
+        for (let column = 0; column < grid; column++){
             board[row].push(Cell());
         }
     }
@@ -15,7 +15,7 @@ function Gameboard(){
     function dropTokens(player, gridObj){
 
         //Find the selected cell
-        for(let row = 0; row < grid; grid++){
+        for(let row = 0; row < grid; row++){
             for(let column = 0; column < grid; column++){
                 if(row == gridObj.row && column == gridObj.column){
                     //If cell already have a player value stop the execution
@@ -32,7 +32,7 @@ function Gameboard(){
     }
 
     function printBoard(){
-        let boardWithCellValues = board.map((row) => row.map((cell) => cell.getValues()));
+        let boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
         console.log(boardWithCellValues);
     }
 
@@ -49,7 +49,7 @@ function Cell(){
     let value = 0;
 
     function addToken(player){
-        value = player;
+        value = player.playerToken;
     }
 
     const getValue = () => value;
@@ -82,9 +82,9 @@ function gameController(){
 
     const getActivePlayer = () => activePlayer;
 
-    function playNewRound(gridObj){
+    function playNewRound(position){
 
-        board.dropTokens(activePlayer, gridObj);
+        board.dropTokens(activePlayer, position);
 
         switchPlayerTurn();
         printNewRound();
@@ -103,3 +103,4 @@ function gameController(){
     };
 }
 
+game = gameController();
