@@ -1,0 +1,74 @@
+/* Reset CSS */
+
+.cellBtn{
+    width: 100px;
+    height: 100px;
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;    padding: 0;
+    border: 0;    font-size: 100%;
+    font: inherit;    vertical-align: baseline;
+}
+
+body {
+    height: 100vh;
+    font-size: 32px;
+}
+.container {
+    margin: auto;
+    margin-top: 50px;
+    width: 70%;
+    height: 60%;
+    display: grid;
+    grid-template: 
+        [row1-start] "turn" 1.5fr[row1-end]
+        [row2-start] "board" 4fr[row2-end]
+        [row3-start] "restart" 1fr[row3-end]
+        / 60%;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+    border: 2px solid black;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.restart{
+    border: 1px solid black;
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-area: restart;
+}
+
+.board {
+    grid-area: board;
+
+}
+
+.cellBtn {
+    font-size: 24px;
+    border: none;
+    background-color: lightgray;
+    color: black;
+    font-weight: bold;
+}
