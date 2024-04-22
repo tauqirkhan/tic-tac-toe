@@ -62,7 +62,7 @@ body {
 
 .board {
     grid-area: board;
-
+    font-size: 40px;
 }
 
 .cellBtn {
@@ -71,4 +71,10 @@ body {
     background-color: lightgray;
     color: black;
     font-weight: bold;
+}
+
+.playerTurn {
+    grid-area: turn;
+    font-size: 52px;
+    color: rgb(255, 0, 0);
 }

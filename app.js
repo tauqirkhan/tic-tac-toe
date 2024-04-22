@@ -3,6 +3,7 @@ function Gameboard(){
     const board = [];
     const grid = 3;
 
+    //Made board array with 3 array inside each array insert cell function 
     for (let row = 0; row < grid; row++){
         board[row] = [];
         for (let column = 0; column < grid; column++){
@@ -14,29 +15,21 @@ function Gameboard(){
 
     function dropTokens(player, gridObj){
 
-        //Find the selected cell
         for(let row = 0; row < grid; row++){
             for(let column = 0; column < grid; column++){
                 if(row == gridObj.row && column == gridObj.column){
-                    //If cell already have a player value stop the execution
-                    if(board[row][column].getValue() != null){
-                        return 'break';
+                    if(board[row][column].getValue() !== null){
+                        return false;
                     } else{
-                    //Else, I have the empty cell and add player token value in it
                         board[row][column].addToken(player);
-                        return 'continue';
+                        return true;
                     }
                 }
             }
         }
     }
 
-    function printBoard(){
-        let boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
-    }
-
     return {
-            printBoard, 
             dropTokens, 
             getBoard
         };
@@ -61,7 +54,12 @@ function Cell(){
  
 function gameController(){
 
-    board = Gameboard();
+    const gameBoard = Gameboard();
+    const board = gameBoard.getBoard();
+
+    let isWin;
+    let switchPlayer;
+
     players = [
         {
             name : 'playerOne',
@@ -75,68 +73,135 @@ function gameController(){
 
     let activePlayer = players[0];
 
+    let resetPlayer = () => activePlayer = players[0];
+
     let switchPlayerTurn = () => {
         activePlayer = (activePlayer === players[0] ? players[1] : players[0]);
     };
 
     const getActivePlayer = () => activePlayer;
 
+    const checkWinStatus = () => isWin;
+
     function playNewRound(position){
+        
+        switchPlayer = gameBoard.dropTokens(activePlayer, position);
 
-        let action = board.dropTokens(activePlayer, position);
+        isWin = checkWin();
 
-        if(action === 'break') return;
-        if(action === 'continue'){
+        handlePlayerSwitch();
+    }
+
+    function checkDraw(){
+        //Check if any null left board
+        for(let i = 0; i < 3; i++){
+            for(let j = 0; j < 3; j++){
+                if(board[i][j].getValue() === null) return false;
+            }
+        }
+
+        //Check if anyone win
+        if(isWin) return false;
+
+        //Else return true
+        return true;
+    }
+
+    function handlePlayerSwitch(){
+        if(switchPlayer){
             switchPlayerTurn();
-            printNewRound();
         }
     }
 
-    function printNewRound(){
-        board.printBoard();
+    function checkWin(){
+        let currentPlayerToken = getActivePlayer().playerToken;
+
+        //Check row
+        for(let i = 0; i < 3; i++){
+            if( board[i][0].getValue() === currentPlayerToken && 
+                board[i][1].getValue() === currentPlayerToken && 
+                board[i][2].getValue() === currentPlayerToken){
+                    return true;
+            }
+        }
+
+        //Check column
+        for(let i = 0; i < 3; i++){
+            if( board[0][i].getValue() === currentPlayerToken &&
+                board[1][i].getValue() === currentPlayerToken &&
+                board[2][i].getValue() === currentPlayerToken){
+                    return true;
+                }
+        }
+
+        //Check diagonal
+        if((board[0][0].getValue() === currentPlayerToken &&
+            board[1][1].getValue() === currentPlayerToken &&
+            board[2][2].getValue() === currentPlayerToken) ||
+           (board[0][2].getValue() === currentPlayerToken &&
+            board[1][1].getValue() === currentPlayerToken &&
+            board[2][0].getValue() === currentPlayerToken)){
+                return true;
+        }
+        return false;
     }
 
-    printNewRound();
-
     return {
+        checkDraw,
+        checkWinStatus,
+        resetPlayer,
         playNewRound,
         getActivePlayer,
-        getBoard: board.getBoard,
+        getBoard: gameBoard.getBoard,
     };
 }
 
 function ScreenController(){
 
-    //cache
     const game = gameController();
+    const board = game.getBoard();
 
-    const container = document.querySelector('.container');
     const playerTurnDiv = document.querySelector('.playerTurn');
     const boardDiv = document.querySelector('.board');
     const restart = document.querySelector('.restart');
 
-    //EventBound
     boardDiv.addEventListener('click', playMove);
     restart.addEventListener('click', clearCellValue);
 
-    //Render
     updateScreen();
 
     //Functions
-    function clearCellValue(){
-        let board = game.getBoard();
+    function updateScreen(){ 
+
+        const currentPlayerName = game.getActivePlayer().name;
+        boardDiv.textContent = '';
+        
+        playerTurnDiv.textContent = `${currentPlayerName} turn...`;
+
         board.forEach((row, rowIndex) => {
-            row.forEach((cell, cellIndex) =>{
-                let cellValue = board[rowIndex][cellIndex].getValue();
-                if(cellValue !== null){
-                    board[rowIndex][cellIndex].addToken('null');
+            row.forEach((cell, columnIndex) => {
+                const cellBtn = document.createElement('button');
+                cellBtn.classList.add('cellBtn');
+
+                //Solution for assigning exact position to each cell
+                cellBtn.dataset.row = rowIndex;
+                cellBtn.dataset.column = columnIndex;
+
+                let value = cell.getValue();
+                if(value === null){
+                    value = '';
                 }
+                cellBtn.textContent = value;
+
+                boardDiv.appendChild(cellBtn);
             });
         });
-        updateScreen();
     }
 
     function playMove(e){
+
+        const currentPlayerName = game.getActivePlayer().name;
+
         const rowPos = e.target.dataset.row;
         const colPos = e.target.dataset.column;
 
@@ -146,34 +211,37 @@ function ScreenController(){
         }
 
         game.playNewRound(position);
+
+        //Check win condition, if it's true, return
+        let checked = game.checkWinStatus();
+        if(checked){
+            boardDiv.textContent = '';
+            playerTurnDiv.textContent = `${currentPlayerName}! \nWon this round`;
+                return;
+            }
+        if(game.checkDraw()){
+            playerTurnDiv.textContent = 'Draw!';
+            boardDiv.textContent = '';
+                return;
+        }
         updateScreen();
     }
-    
-    function updateScreen(){
 
-        //Refresh board
-        boardDiv.textContent = '';
-        
-        const board = game.getBoard();
-        const currentPlayer = game.getActivePlayer().name;
-        
-        playerTurnDiv.textContent = `${currentPlayer} turn...`;
-
-        //Creating board with each cell represented with btn
-        //Also, included dataset to get accurate information about position when click
+    function clearCellValue(){
+        let reset = {
+            playerToken : null
+        }
         board.forEach((row, rowIndex) => {
-            row.forEach((cell, columnIndex) => {
-                const cellBtn = document.createElement('button');
-                cellBtn.classList.add('cellBtn');
-
-                cellBtn.dataset.row = rowIndex;
-                cellBtn.dataset.column = columnIndex;
-
-                cellBtn.textContent = cell.getValue();
-
-                boardDiv.appendChild(cellBtn);
+            row.forEach((cell, cellIndex) =>{
+                let cellValue = board[rowIndex][cellIndex].getValue();
+                if(cellValue !== null){
+                    let value = board[rowIndex][cellIndex].addToken(reset);
+                }
             });
         });
+        // For resetting gamePlayer to one
+        game.resetPlayer();
+        updateScreen();
     }
 }
 
